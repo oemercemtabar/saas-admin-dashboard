@@ -8,16 +8,17 @@ import Settings from "../pages/Settings.tsx";
 import Login from "../pages/Login.tsx";
 
 export const router = createBrowserRouter([
-  { path: "/login", element: <Login/>},
-  { path: "/",
-    element: <AppShell/>,
+  { path: "/login", element: <Login /> },
+  {
+    path: "/",
+    element: <AppShell />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: "dashboard", element: <Dashboard/> },
-      { path: "user", element: <Users/> },
-      { path: "tickets", element: <Tickets/> },
-      { path: "health", element: <Health/> },
-      { path: "settings", element: <Settings/> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "users", element: <Users /> },
+      { path: "tickets", element: <Tickets /> },
+      { path: "health", element: <Health /> },
+      { path: "settings", element: <Settings /> },
     ],
   },
 ]);

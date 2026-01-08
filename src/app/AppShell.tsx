@@ -1,12 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "user", label: "User" },
-  { to: "/tickets", label: "Tickets" },
-  { to: "/health", label: "Health" },
-  { to: "/settings", label: "Settings" },
-];
+import { navItems } from "./nav";
 
 export default function AppShell() {
     return (
