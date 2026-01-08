@@ -5,7 +5,7 @@ export type Kpis ={
     activeUsers: number;
     sessions: number;
     crashes: number;
-    conersionRate: number;
+    conversionRate: number;
 };
 
 export function useKpis() {

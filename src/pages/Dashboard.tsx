@@ -1,7 +1,7 @@
 import { useKpis } from "../features/dashboard/useKpis";
 import { useActivity } from "../features/dashboard/useActivity";
 
-function StatCard ({ label, value }: { label: string; value: number }) {
+function StatCard ({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border bg-white p-4 shadow-sm">
       <div className="text-sm text-gray-600">{label}</div>
@@ -29,7 +29,7 @@ export default function Dashboard() {
           <StatCard label="Active Users" value={kpis.data?.activeUsers ?? 0} />
           <StatCard label="Sessions" value={kpis.data?.sessions ?? 0} />
           <StatCard label="Crashes" value={kpis.data?.crashes ?? 0} />
-          <StatCard label="Conversion Rate" value={Math.round((kpis.data?.conersionRate ?? 0) * 10000) / 100}/>
+          <StatCard label="Conversion Rate" value={Math.round((kpis.data?.conversionRate ?? 0) * 10000) / 100} />
         </div>
       )}
       <div className="rounded-2xl border bg-white p-4 shadow-sm">
