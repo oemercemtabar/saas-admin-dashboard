@@ -5,7 +5,7 @@ import type { HealthResponse } from "./types";
 export function useHealth() {
   return useQuery<HealthResponse>({
     queryKey: ["health"],
-    queryFn: () => apiGet("/health"),
+    queryFn: () => apiGet("/api/health"),
     refetchInterval: 15000,
   });
 }

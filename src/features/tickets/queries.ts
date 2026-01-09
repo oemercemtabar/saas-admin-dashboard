@@ -19,7 +19,7 @@ export function useTickets(params: TicketsQueryParams) {
 
   return useQuery<TicketsResponse>({
     queryKey: ["tickets", params],
-    queryFn: () => apiGet(`/tickets?${search.toString()}`), 
+    queryFn: () => apiGet(`/api/tickets?${search.toString()}`), 
     placeholderData: (prev) => prev,
   });
 }

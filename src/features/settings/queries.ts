@@ -5,7 +5,7 @@ import type { Settings } from "./types";
 export function useSettings() {
   return useQuery<Settings>({
     queryKey: ["settings"],
-    queryFn: () => apiGet("/settings"), 
+    queryFn: () => apiGet("/api/settings"), 
   });
 }
 

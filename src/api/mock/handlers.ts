@@ -15,6 +15,29 @@ function isoDay(offsetDays: number) {
 const roles = ['admin', 'client_admin', 'user'] as const;
 const statuses = ['active', 'inactive'] as const;
 type TicketStatus = "pending" | "in_progress" | "resolved";
+let tickets = Array.from({ length: 38 }, (_, i) => {
+  const id = `t${i + 1}`;
+  const status: TicketStatus =
+    i % 3 === 0 ? "pending" : i % 3 === 1 ? "in_progress" : "resolved";
+
+  return {
+    id,
+    code: ["UI", "Backend", "DataProcessor", "Cloud", "CMS"][i % 5] + "-" + String(1000 + i),
+    client: ["DMT", "EpicTV", "ClientB", "Internal"][i % 4],
+    email: `contact${(i % 8) + 1}@example.com`,
+    subject: ["Bug", "Question", "Request", "Incident"][i % 4] + " - " + id,
+    status,
+    createdAt: new Date(Date.now() - (i + 1) * 8 * 60 * 60 * 1000).toISOString(),
+  };
+});
+
+// --- Settings mock store
+let settings = {
+  refreshIntervalSec: 15,
+  enableCrashReporting: true,
+  enableActivityTracking: true,
+  environment: "demo",
+};
 
 const allUsers = Array.from({ length: 57 }, (_, i) => {
     const idx = i + 1;
@@ -129,11 +152,11 @@ export const handlers = [
         const sessions = Array.from({ length: 6 }, (_, i) => ({
             id: `${id}-s${i + 1}`,
             ts: new Date(Date.now() - (i + 1) * 36 * 60 * 60 * 1000).toISOString(),
-            brand: ['DMT', 'Nike', 'Adidas', 'Salomon'][i % 4],
-            model: ['Model A', 'Model B', 'Model C'][i % 3],
-            footShpae: ['Narrow', 'Average', 'Wide', 'Extra Wide'][i % 4],
-            toeShape: ['Greek', 'Roman', 'Egyptian'][i % 3],
-            statuses: ["completed", "completed", "failed"][i % 3],
+            brand: ["DMT", "Nike", "Adidas", "Salomon"][i % 4],
+            model: ["Model A", "Model B", "Model C"][i % 3],
+            footShape: ["Narrow", "Average", "Wide", "Extra Wide"][i % 4],
+            toeShape: ["Greek", "Roman", "Egyptian"][i % 3],
+            status: ["completed", "completed", "failed"][i % 3],
         }));
 
         return HttpResponse.json({
@@ -161,4 +184,78 @@ export const handlers = [
 
         return HttpResponse.json({ items: data });
     },),
+
+    http.get("/api/health", async () => {
+        await delay(200);
+
+        return HttpResponse.json({
+            updatedAt: new Date().toISOString(),
+            services: [
+            { name: "api", status: "healthy", latencyMs: 62, uptime: 99.98 },
+            { name: "redis", status: "healthy", latencyMs: 3, uptime: 99.99 },
+            { name: "postgres", status: "healthy", latencyMs: 12, uptime: 99.97 },
+            { name: "data-processor", status: "degraded", latencyMs: 240, uptime: 99.4 },
+            { name: "cdn", status: "healthy", latencyMs: 18, uptime: 99.99 },
+            ],
+        });
+    }),
+
+    http.get("/api/settings", async () => {
+        await delay(200);
+        return HttpResponse.json(settings);
+    }),
+
+    http.put("/api/settings", async ({ request }) => {
+        await delay(250);
+        const body = (await request.json()) as Partial<typeof settings>;
+        settings = { ...settings, ...body };
+        return HttpResponse.json(settings);
+    }),
+
+    http.get("/api/tickets", async ({ request }) => {
+        await delay(250);
+
+        const url = new URL(request.url);
+        const q = (url.searchParams.get("q") ?? "").toLowerCase();
+        const status = url.searchParams.get("status") ?? "all";
+        const page = Number(url.searchParams.get("page") ?? "1");
+        const pageSize = Number(url.searchParams.get("pageSize") ?? "10");
+
+        let filtered = tickets;
+
+        if (q) {
+            filtered = filtered.filter(
+            (t) =>
+                t.code.toLowerCase().includes(q) ||
+                t.client.toLowerCase().includes(q) ||
+                t.email.toLowerCase().includes(q) ||
+                t.subject.toLowerCase().includes(q)
+            );
+        }
+
+        if (status !== "all") {
+            filtered = filtered.filter((t) => t.status === status);
+        }
+
+        const total = filtered.length;
+        const start = (page - 1) * pageSize;
+        const items = filtered.slice(start, start + pageSize);
+
+        return HttpResponse.json({ items, page, pageSize, total });
+    }),
+
+    http.patch("/api/tickets/:id", async ({ params, request }) => {
+        await delay(200);
+        const { id } = params as { id: string };
+        const body = (await request.json()) as { status?: TicketStatus };
+
+        tickets = tickets.map((t) =>
+            t.id === id ? { ...t, status: body.status ?? t.status } : t
+        );
+
+        const updated = tickets.find((t) => t.id === id);
+        if (!updated) return new HttpResponse(null, { status: 404 });
+
+        return HttpResponse.json(updated);
+    }),
 ];
