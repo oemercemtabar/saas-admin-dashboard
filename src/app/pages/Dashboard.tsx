@@ -2,18 +2,11 @@ import { useState } from "react";
 import { useKpis } from "../../features/dashboard/useKpis";
 import { useActivity } from "../../features/dashboard/useActivity";
 import { useTimeseries } from "../../features/dashboard/useTimeseries";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  BarChart,
-  Bar,
-} from "recharts";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar} from "recharts";
 import Skeleton from "../../components/Skeleton";
+import InsightCards from "../../components/InsightCards";
+import { computeInsights } from "../../features/dashboard/insights";
+
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border bg-white p-4 shadow-sm">
@@ -52,6 +45,9 @@ export default function Dashboard() {
   const [days, setDays] = useState(14);
   const ts = useTimeseries(days);
 
+  const items = ts.data?.items ?? [];
+  const insights = ts.isLoading || ts.isError ? null : computeInsights(items);  
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -89,6 +85,7 @@ export default function Dashboard() {
               <div className="text-lg font-semibold">Trends</div>
               <div className="text-sm text-gray-600">Last {days} days</div>
             </div>
+            <InsightCards isLoading={ts.isLoading} isError={ts.isError} insights={insights} />
 
             <div className="flex items-center gap-2">
               <RangePill active={days === 7} onClick={() => setDays(7)}>
@@ -103,7 +100,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts */}
           {ts.isLoading ? (
             <div className="grid gap-4 xl:grid-cols-2">
               {Array.from({ length: 2 }).map((_, i) => (
@@ -117,7 +113,6 @@ export default function Dashboard() {
             <div className="text-red-600">Failed to load charts.</div>
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
-              {/* Sessions & Active Users */}
               <div className="rounded-2xl border bg-white p-4 shadow-sm">
                 <div className="text-sm font-medium text-gray-700">
                   Sessions & Active Users
@@ -141,7 +136,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Crashes */}
               <div className="rounded-2xl border bg-white p-4 shadow-sm">
                 <div className="text-sm font-medium text-gray-700">Crashes</div>
                 <div className="mt-3 h-64">
@@ -165,7 +159,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* RIGHT */}
         <div className="lg:col-span-1">
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
             <div className="text-lg font-semibold">Recent Activity</div>
