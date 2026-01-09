@@ -19,5 +19,6 @@ export function useUsers(params: {
   return useQuery<UserResponse>({
     queryKey: ["users", params],
     queryFn: () => apiGet<UserResponse>(`/api/users?${search.toString()}`),
+    placeholderData: (prev) => prev,
   });
 }

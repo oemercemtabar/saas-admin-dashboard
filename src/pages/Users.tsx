@@ -67,7 +67,7 @@ export default function Users() {
 
       <div className="rounded-2xl border bg-white p-4 shadow-sm space-y-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3">
             <input
               value={q}
               onChange={(e) => {

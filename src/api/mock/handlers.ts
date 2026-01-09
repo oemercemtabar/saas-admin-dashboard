@@ -1,5 +1,26 @@
 import { delay, http, HttpResponse } from 'msw'
 
+function daysAgo(days: number) {
+    return new Date(Date.now() - days * 24 * 60 * 60).toISOString();
+}
+
+const roles = ['admin', 'client_admin', 'user'] as const;
+const statuses = ['active', 'inactive'] as const;
+
+const allUsers = Array.from({ length: 57 }, (_, i) => {
+    const idx = i + 1;
+    const role = roles[idx % roles.length];
+    const status = statuses[idx % statuses.length];
+    return {
+        id: `u${idx}`,
+        name: `User ${idx}`,
+        email: `user${idx}@example.com`,
+        role,
+        status,
+        lastSeen: daysAgo(idx % 15),
+    };
+});
+
 export const handlers = [
   http.get('/api/kpis', async () => {
     await delay(250);
@@ -48,17 +69,6 @@ export const handlers = [
         const role = url.searchParams.get('role') ?? 'all';
         const page = Number(url.searchParams.get('page') ?? '1');
         const pageSize = Number(url.searchParams.get('pageSize') ?? '10');
-
-        const allUsers = [
-            { id: "u1", name:"Alice Johnson", email: "alice@example.com", role: "admin", status: "active", lastSeen: daysAgo(2) },
-            { id: "u2", name:"Bob Smith", email: "bob@example.com", role: "user", status: "active", lastSeen: daysAgo(5) },
-            { id: "u3", name:"Charlie Brown", email: "charlie@example.com", role: "user", status: "inactive", lastSeen: daysAgo(10) }
-            // ...more mock users
-        ];
-
-        function daysAgo(days: number) {
-            return new Date(Date.now() - days * 24 * 60_000 * 60).toISOString();
-        }
 
         let filtered = allUsers;
 
