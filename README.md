@@ -17,13 +17,7 @@ A modern **SaaS Admin Dashboard** built with **React + TypeScript + Vite + Tailw
   <img src="docs/screenshots/health.jpeg" width="220" alt="Health" />
   <img src="docs/screenshots/settings.jpeg" width="220" alt="Settings" />
 </p>
-![Login](docs/screenshots/login.jpeg)
-![Dashboard](docs/screenshots/dashboard.jpeg)
-![Users](docs/screenshots/users.jpeg)
-![User Drawer](docs/screenshots/user-drawer.jpeg)
-![Tickets](docs/screenshots/tickets.jpeg)
-![Health](docs/screenshots/health.jpeg)
-![Settings](docs/screenshots/settings.jpeg)
+
 
 ---
 
