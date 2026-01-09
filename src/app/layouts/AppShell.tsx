@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { navItems } from "../nav";
-import { clearToken } from "../../features/auth/session";
+import { clearToken, getUser } from "../../features/auth/session";
 
 export default function AppShell() {
   const navigate = useNavigate();
+  const user = getUser();
 
-  function handleLogout() {
+  function onLogout() {
     clearToken();
     navigate("/login", { replace: true });
   }
@@ -42,9 +43,12 @@ export default function AppShell() {
             <div className="font-medium">Client Performance Console</div>
 
             <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-600">Admin</div>
+              <div className="text-sm text-gray-600">
+                {user ? `${user.name} • ${user.role}` : "Admin"}
+              </div>
+
               <button
-                onClick={handleLogout}
+                onClick={onLogout}
                 className="rounded-xl border px-3 py-1.5 text-sm hover:bg-gray-50"
               >
                 Logout

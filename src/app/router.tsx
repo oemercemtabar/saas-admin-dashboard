@@ -1,15 +1,20 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import AppShell from "./layouts/AppShell";
 import RequireAuth from "../features/auth/RequireAuth";
-import AppShell from "../app/layouts/AppShell.tsx";
-import Dashboard from "../app/pages/Dashboard.tsx";
-import Users from "../app/pages/Users.tsx";
-import Tickets from "../app/pages/Tickets.tsx";
-import Health from "../app/pages/Health.tsx";
-import Settings from "../app/pages/Settings.tsx";
-import Login from "../app/pages/Login.tsx";
-import ErrorPage from "../app/pages/ErrorPage.tsx";
+import { getToken } from "../features/auth/session";
+
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import Tickets from "./pages/Tickets";
+import Health from "./pages/Health";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
+
 export const router = createBrowserRouter([
-  { path: "/login", element: <Login /> },
+  {
+    path: "/login",
+    element: getToken() ? <Navigate to="/dashboard" replace /> : <Login />,
+  },
   {
     path: "/",
     element: (
@@ -17,7 +22,6 @@ export const router = createBrowserRouter([
         <AppShell />
       </RequireAuth>
     ),
-    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "dashboard", element: <Dashboard /> },
@@ -26,5 +30,5 @@ export const router = createBrowserRouter([
       { path: "health", element: <Health /> },
       { path: "settings", element: <Settings /> },
     ],
-  }
+  },
 ]);
