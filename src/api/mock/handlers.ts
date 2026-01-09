@@ -22,15 +22,28 @@ const allUsers = Array.from({ length: 57 }, (_, i) => {
 });
 
 export const handlers = [
-  http.get('/api/kpis', async () => {
-    await delay(250);
-    return HttpResponse.json({
-        activeUsers: 1200,
-        sessions: 3500,
-        crashes: 15,
-        conersionRate: 0.124,
-    });
- }),
+
+  http.post('/api/auth/login', async ({request}) => {
+    await delay(300);
+    const body = (await request.json()) as { email: string; password: string };
+    if (body.email === 'admin@opspulse.dev' && body.password === 'admin123') {
+        return HttpResponse.json({ token: 'fake-jwt-token', user: {id: "admin-1", name: "Admin", role: "admin"}, });
+    }
+    return new HttpResponse(
+      JSON.stringify({ message: "Invalid email or password" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }),
+
+    http.get('/api/kpis', async () => {
+        await delay(250);
+        return HttpResponse.json({
+            activeUsers: 1200,
+            sessions: 3500,
+            crashes: 15,
+            conersionRate: 0.124,
+        });
+    }),
 
     http.get('/api/activity', async () => {
         await delay(250);
