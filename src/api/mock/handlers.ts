@@ -4,8 +4,17 @@ function daysAgo(days: number) {
     return new Date(Date.now() - days * 24 * 60 * 60).toISOString();
 }
 
+function isoDay(offsetDays: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - offsetDays);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+
 const roles = ['admin', 'client_admin', 'user'] as const;
 const statuses = ['active', 'inactive'] as const;
+type TicketStatus = "pending" | "in_progress" | "resolved";
 
 const allUsers = Array.from({ length: 57 }, (_, i) => {
     const idx = i + 1;
@@ -131,5 +140,25 @@ export const handlers = [
             user,
             sessions,
         });
+    },),
+
+    http.get("/api/metrics/timeseries", async ({ request }) => {
+        await delay(250);
+
+        const url = new URL(request.url);
+        const days = Number(url.searchParams.get("days") ?? "14");
+
+        const data = Array.from({ length: days }).map((_, i) => {
+            const idx = days - 1 - i;
+            return {
+            day: isoDay(idx),
+            activeUsers: 800 + (i * 13) + (i % 3) * 40,
+            sessions: 1800 + (i * 27) + (i % 4) * 60,
+            crashes: Math.max(0, 12 - (i % 6)),
+            conversionRate: 0.09 + (i % 5) * 0.004,
+            };
+        });
+
+        return HttpResponse.json({ items: data });
     },),
 ];
