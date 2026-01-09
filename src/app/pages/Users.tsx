@@ -4,6 +4,7 @@ import type { UserRow } from "../../features/users/types";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import UserDrawer from "../../features/users/UserDrawer";
+import TableSkeleton from "../../components/TableSkeleton";
 
 function StatusPill({ status }: { status: UserRow["status"] }) {
   const cls =
@@ -106,7 +107,9 @@ export default function Users() {
           </div>
         </div>
 
-        {users.isError ? (
+        {users.isLoading ? (
+          <TableSkeleton rows={8} cols={5} />
+        ) : users.isError ? (
           <div className="text-red-600 text-sm">Failed to load users.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -140,7 +143,7 @@ export default function Users() {
               </tbody>
             </table>
 
-            {!users.isLoading && (users.data?.items?.length ?? 0) === 0 && (
+            {(users.data?.items?.length ?? 0) === 0 && (
               <div className="py-6 text-sm text-gray-600">No users found.</div>
             )}
           </div>

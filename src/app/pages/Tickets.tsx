@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { useTickets, useUpdateTicketStatus } from "../../features/tickets/queries";
 import type { Ticket, TicketStatus } from "../../features/tickets/types";
+import TableSkeleton from "../../components/TableSkeleton";
 
 function StatusPill({ status }: { status: TicketStatus }) {
   const cls =
@@ -14,7 +15,11 @@ function StatusPill({ status }: { status: TicketStatus }) {
       : "bg-green-100 text-green-700";
   const label = status === "in_progress" ? "in progress" : status;
 
-  return <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>{label}</span>;
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 export default function Tickets() {
@@ -96,7 +101,7 @@ export default function Tickets() {
         },
       },
     ],
-    [updateStatus.isPending]
+    [updateStatus.isPending, updateStatus.variables]
   );
 
   const table = useReactTable({
@@ -114,6 +119,7 @@ export default function Tickets() {
         <h1 className="text-2xl font-semibold">Tickets</h1>
         <p className="mt-1 text-gray-600">Track and manage support requests.</p>
       </div>
+
       {toast && (
         <div className="rounded-xl border bg-white px-4 py-2 text-sm shadow-sm w-fit">
           {toast}
@@ -132,6 +138,7 @@ export default function Tickets() {
               placeholder="Search code, client, email, subject..."
               className="w-full md:w-96 rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10"
             />
+
             <select
               value={status}
               onChange={(e) => {
@@ -152,7 +159,9 @@ export default function Tickets() {
           </div>
         </div>
 
-        {tickets.isError ? (
+        {tickets.isLoading ? (
+          <TableSkeleton rows={8} cols={7} />
+        ) : tickets.isError ? (
           <div className="text-red-600 text-sm">Failed to load tickets.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -182,7 +191,7 @@ export default function Tickets() {
               </tbody>
             </table>
 
-            {!tickets.isLoading && (tickets.data?.items?.length ?? 0) === 0 && (
+            {(tickets.data?.items?.length ?? 0) === 0 && (
               <div className="py-6 text-sm text-gray-600">No tickets found.</div>
             )}
           </div>

@@ -13,7 +13,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-
+import Skeleton from "../../components/Skeleton";
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border bg-white p-4 shadow-sm">
@@ -59,13 +59,17 @@ export default function Dashboard() {
         <p className="mt-2 text-gray-600">Overview of Client KPIs</p>
       </div>
 
-      {/* Main 2-column layout: Left = KPIs+Charts, Right = Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* LEFT */}
         <div className="lg:col-span-2 space-y-6">
-          {/* KPI cards */}
           {kpis.isLoading ? (
-            <div className="text-gray-600">Loading KPIs...</div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border bg-white p-4 shadow-sm">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="mt-3 h-8 w-20" />
+                </div>
+              ))}
+            </div>
           ) : kpis.isError ? (
             <div className="text-red-600">Error loading KPIs</div>
           ) : (
@@ -80,7 +84,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Trends header */}
           <div className="flex items-center justify-between">
             <div>
               <div className="text-lg font-semibold">Trends</div>
@@ -102,7 +105,14 @@ export default function Dashboard() {
 
           {/* Charts */}
           {ts.isLoading ? (
-            <div className="text-gray-600">Loading charts…</div>
+            <div className="grid gap-4 xl:grid-cols-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border bg-white p-4 shadow-sm">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="mt-4 h-64 w-full rounded-2xl" />
+                </div>
+              ))}
+            </div>
           ) : ts.isError ? (
             <div className="text-red-600">Failed to load charts.</div>
           ) : (
@@ -161,7 +171,14 @@ export default function Dashboard() {
             <div className="text-lg font-semibold">Recent Activity</div>
 
             {activity.isLoading ? (
-              <div className="mt-3 text-gray-600">Loading activity…</div>
+              <ul className="mt-3 space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <li key={i} className="py-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="mt-2 h-3 w-1/3" />
+                  </li>
+                ))}
+              </ul>
             ) : activity.isError ? (
               <div className="mt-3 text-red-600">Failed to load activity</div>
             ) : (
