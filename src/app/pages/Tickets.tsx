@@ -26,6 +26,13 @@ export default function Tickets() {
   const tickets = useTickets({ q, status, page, pageSize });
   const updateStatus = useUpdateTicketStatus();
 
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 1500);
+  }
+
   const columns = useMemo<ColumnDef<Ticket>[]>(
     () => [
       { accessorKey: "code", header: "Code" },
@@ -51,29 +58,38 @@ export default function Tickets() {
         header: "Actions",
         cell: ({ row }) => {
           const t = row.original;
-          const busy = updateStatus.isPending;
+
+          const busyId = updateStatus.variables?.id;
+          const isRowBusy = updateStatus.isPending && busyId === t.id;
 
           return (
             <div className="flex items-center gap-2">
               <button
                 className="rounded-xl border px-3 py-1.5 text-xs disabled:opacity-50 hover:bg-gray-50"
-                disabled={busy || t.status === "in_progress"}
+                disabled={isRowBusy || t.status === "in_progress"}
                 onClick={(e) => {
                   e.stopPropagation();
-                  updateStatus.mutate({ id: t.id, status: "in_progress" });
+                  updateStatus.mutate(
+                    { id: t.id, status: "in_progress" },
+                    { onSuccess: () => showToast(`Ticket ${t.code} set to In progress`) }
+                  );
                 }}
               >
-                In progress
+                {isRowBusy ? "Updating…" : "In progress"}
               </button>
+
               <button
                 className="rounded-xl border px-3 py-1.5 text-xs disabled:opacity-50 hover:bg-gray-50"
-                disabled={busy || t.status === "resolved"}
+                disabled={isRowBusy || t.status === "resolved"}
                 onClick={(e) => {
                   e.stopPropagation();
-                  updateStatus.mutate({ id: t.id, status: "resolved" });
+                  updateStatus.mutate(
+                    { id: t.id, status: "resolved" },
+                    { onSuccess: () => showToast(`Ticket ${t.code} resolved`) }
+                  );
                 }}
               >
-                Resolved
+                {isRowBusy ? "Updating…" : "Resolved"}
               </button>
             </div>
           );
@@ -98,6 +114,11 @@ export default function Tickets() {
         <h1 className="text-2xl font-semibold">Tickets</h1>
         <p className="mt-1 text-gray-600">Track and manage support requests.</p>
       </div>
+      {toast && (
+        <div className="rounded-xl border bg-white px-4 py-2 text-sm shadow-sm w-fit">
+          {toast}
+        </div>
+      )}
 
       <div className="rounded-2xl border bg-white p-4 shadow-sm space-y-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

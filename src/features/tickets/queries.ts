@@ -19,7 +19,7 @@ export function useTickets(params: TicketsQueryParams) {
 
   return useQuery<TicketsResponse>({
     queryKey: ["tickets", params],
-    queryFn: () => apiGet(`/api/tickets?${search.toString()}`), 
+    queryFn: () => apiGet(`/api/tickets?${search.toString()}`),
     placeholderData: (prev) => prev,
   });
 }
@@ -38,7 +38,30 @@ export function useUpdateTicketStatus() {
       if (!res.ok) throw new Error("Failed to update ticket");
       return (await res.json()) as Ticket;
     },
-    onSuccess: () => {
+
+    onMutate: async (payload) => {
+      await qc.cancelQueries({ queryKey: ["tickets"] });
+
+      const previous = qc.getQueriesData<TicketsResponse>({ queryKey: ["tickets"] });
+      previous.forEach(([key, data]) => {
+        if (!data) return;
+        qc.setQueryData<TicketsResponse>(key, {
+          ...data,
+          items: data.items.map((t) =>
+            t.id === payload.id ? { ...t, status: payload.status } : t
+          ),
+        });
+      });
+
+      return { previous };
+    },
+    onError: (_err, _payload, ctx) => {
+      ctx?.previous?.forEach(([key, data]) => {
+        qc.setQueryData(key, data);
+      });
+    },
+
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["tickets"] });
     },
   });
