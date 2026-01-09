@@ -3,16 +3,23 @@ import { useUsers } from "../features/users/queries";
 import type { UserRow } from "../features/users/types";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef } from "@tanstack/react-table";
+import UserDrawer from "../features/users/userDrawer";
 
 function StatusPill({ status }: { status: UserRow["status"] }) {
   const cls =
     status === "active"
       ? "bg-green-100 text-green-700"
       : "bg-gray-100 text-gray-700";
-  return <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>{status}</span>;
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>
+      {status}
+    </span>
+  );
 }
 
 export default function Users() {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   const [q, setQ] = useState("");
   const [role, setRole] = useState<"all" | "admin" | "client_admin" | "user">("all");
   const [page, setPage] = useState(1);
@@ -28,7 +35,9 @@ export default function Users() {
         accessorKey: "role",
         header: "Role",
         cell: ({ getValue }) => (
-          <span className="text-sm text-gray-700">{String(getValue()).replace("_", " ")}</span>
+          <span className="text-sm text-gray-700">
+            {String(getValue()).replace("_", " ")}
+          </span>
         ),
       },
       {
@@ -113,9 +122,14 @@ export default function Users() {
                   </tr>
                 ))}
               </thead>
+
               <tbody className="divide-y">
                 {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr
+                    key={row.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedUserId(row.original.id)}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3 pr-4 text-sm">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -154,6 +168,8 @@ export default function Users() {
           </button>
         </div>
       </div>
+
+      <UserDrawer userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
     </div>
   );
 }

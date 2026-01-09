@@ -7,7 +7,7 @@ export type UserRow = {
     email: string;
     role: UserRole;
     status: UserStatus;
-    lastSeen: string; // ISO date string
+    lastSeen: string; 
 };
 
 export type UserResponse = {

@@ -94,4 +94,29 @@ export const handlers = [
             pageSize,
         });
     },),
+
+    http.get('/api/users/:id', async ({ params }) => {
+        await delay(200);
+        const {id} = params as {id: string};
+        const user = allUsers.find(u => u.id === id);
+
+        if(!user) {
+            return new HttpResponse(null, { status: 404 });
+        }
+
+        const sessions = Array.from({ length: 6 }, (_, i) => ({
+            id: `${id}-s${i + 1}`,
+            ts: new Date(Date.now() - (i + 1) * 36 * 60 * 60 * 1000).toISOString(),
+            brand: ['DMT', 'Nike', 'Adidas', 'Salomon'][i % 4],
+            model: ['Model A', 'Model B', 'Model C'][i % 3],
+            footShpae: ['Narrow', 'Average', 'Wide', 'Extra Wide'][i % 4],
+            toeShape: ['Greek', 'Roman', 'Egyptian'][i % 3],
+            statuses: ["completed", "completed", "failed"][i % 3],
+        }));
+
+        return HttpResponse.json({
+            ...user,
+            sessions,
+        });
+    },),
 ];
