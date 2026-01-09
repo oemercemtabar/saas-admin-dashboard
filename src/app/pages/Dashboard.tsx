@@ -1,5 +1,18 @@
+import { useState } from "react";
 import { useKpis } from "../../features/dashboard/useKpis";
 import { useActivity } from "../../features/dashboard/useActivity";
+import { useTimeseries } from "../../features/dashboard/useTimeseries";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+} from "recharts";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -10,9 +23,34 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+function RangePill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={[
+        "rounded-xl border px-3 py-1.5 text-sm",
+        active ? "bg-black text-white" : "bg-white hover:bg-gray-50",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function Dashboard() {
   const kpis = useKpis();
   const activity = useActivity();
+
+  const [days, setDays] = useState(14);
+  const ts = useTimeseries(days);
 
   return (
     <div className="p-6 space-y-6">
@@ -21,8 +59,11 @@ export default function Dashboard() {
         <p className="mt-2 text-gray-600">Overview of Client KPIs</p>
       </div>
 
+      {/* Main 2-column layout: Left = KPIs+Charts, Right = Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        {/* LEFT */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* KPI cards */}
           {kpis.isLoading ? (
             <div className="text-gray-600">Loading KPIs...</div>
           ) : kpis.isError ? (
@@ -38,8 +79,83 @@ export default function Dashboard() {
               />
             </div>
           )}
+
+          {/* Trends header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold">Trends</div>
+              <div className="text-sm text-gray-600">Last {days} days</div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <RangePill active={days === 7} onClick={() => setDays(7)}>
+                7d
+              </RangePill>
+              <RangePill active={days === 14} onClick={() => setDays(14)}>
+                14d
+              </RangePill>
+              <RangePill active={days === 30} onClick={() => setDays(30)}>
+                30d
+              </RangePill>
+            </div>
+          </div>
+
+          {/* Charts */}
+          {ts.isLoading ? (
+            <div className="text-gray-600">Loading charts…</div>
+          ) : ts.isError ? (
+            <div className="text-red-600">Failed to load charts.</div>
+          ) : (
+            <div className="grid gap-4 xl:grid-cols-2">
+              {/* Sessions & Active Users */}
+              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                <div className="text-sm font-medium text-gray-700">
+                  Sessions & Active Users
+                </div>
+                <div className="mt-3 h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={ts.data?.items ?? []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="day"
+                        tickFormatter={(v) => new Date(v).toLocaleDateString()}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        labelFormatter={(v) => new Date(String(v)).toLocaleString()}
+                      />
+                      <Line type="monotone" dataKey="sessions" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="activeUsers" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Crashes */}
+              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                <div className="text-sm font-medium text-gray-700">Crashes</div>
+                <div className="mt-3 h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={ts.data?.items ?? []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="day"
+                        tickFormatter={(v) => new Date(v).toLocaleDateString()}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        labelFormatter={(v) => new Date(String(v)).toLocaleString()}
+                      />
+                      <Bar dataKey="crashes" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* RIGHT */}
         <div className="lg:col-span-1">
           <div className="rounded-2xl border bg-white p-4 shadow-sm">
             <div className="text-lg font-semibold">Recent Activity</div>
@@ -54,7 +170,9 @@ export default function Dashboard() {
                   <li key={item.id} className="py-3 flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium">{item.message}</div>
-                      <div className="mt-1 text-xs text-gray-500">{item.type.toUpperCase()}</div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {String(item.type).toUpperCase()}
+                      </div>
                     </div>
                     <div className="text-xs text-gray-500 whitespace-nowrap">
                       {new Date(item.ts).toLocaleString()}
