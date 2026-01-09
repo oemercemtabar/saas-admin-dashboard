@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useUsers } from "../features/users/queries";
-import type { UserRow } from "../features/users/types";
+import { useUsers } from "../../features/users/queries";
+import type { UserRow } from "../../features/users/types";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef } from "@tanstack/react-table";
-import UserDrawer from "../features/users/userDrawer";
+import UserDrawer from "../../features/users/UserDrawer";
 
 function StatusPill({ status }: { status: UserRow["status"] }) {
   const cls =

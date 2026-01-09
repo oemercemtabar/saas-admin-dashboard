@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { navItems } from "./nav";
+import { navItems } from "../nav";
 
 export default function AppShell() {
     return (

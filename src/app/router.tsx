@@ -1,17 +1,19 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import AppShell from "./AppShell.tsx";
-import Dashboard from "../pages/Dashboard.tsx";
-import Users from "../pages/Users.tsx";
-import Tickets from "../pages/Tickets.tsx";
-import Health from "../pages/Health.tsx";
-import Settings from "../pages/Settings.tsx";
-import Login from "../pages/Login.tsx";
+import AppShell from "../app/layouts/AppShell.tsx";
+import Dashboard from "../app/pages/Dashboard.tsx";
+import Users from "../app/pages/Users.tsx";
+import Tickets from "../app/pages/Tickets.tsx";
+import Health from "../app/pages/Health.tsx";
+import Settings from "../app/pages/Settings.tsx";
+import Login from "../app/pages/Login.tsx";
+import ErrorPage from "../app/pages/ErrorPage.tsx";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   {
     path: "/",
     element: <AppShell />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "dashboard", element: <Dashboard /> },
@@ -20,5 +22,5 @@ export const router = createBrowserRouter([
       { path: "health", element: <Health /> },
       { path: "settings", element: <Settings /> },
     ],
-  },
+  }
 ]);

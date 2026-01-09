@@ -1,5 +1,5 @@
-import { useKpis } from "../features/dashboard/useKpis";
-import { useActivity } from "../features/dashboard/useActivity";
+import { useKpis } from "../../features/dashboard/useKpis";
+import { useActivity } from "../../features/dashboard/useActivity";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
