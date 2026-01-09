@@ -115,7 +115,7 @@ export const handlers = [
         }));
 
         return HttpResponse.json({
-            ...user,
+            user,
             sessions,
         });
     },),
