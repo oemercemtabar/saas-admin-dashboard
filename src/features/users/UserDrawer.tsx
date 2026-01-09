@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useUser } from "./useUser";
 
 export default function UserDrawer({
@@ -11,24 +12,34 @@ export default function UserDrawer({
   const detail = useUser(userId);
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
+    if (!userId) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [userId, onClose]);
 
   if (!userId) return null;
 
-  const payload = detail.data as any;
-  const user = payload?.user ?? payload;
-  const sessions = payload?.sessions ?? [];
+  const data = detail.data;
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+  return createPortal(
+    <div className="fixed inset-0 z-[9999]">
+      {/* overlay */}
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl border-l">
+      {/* panel */}
+      <div className="absolute right-0 top-0 h-screen w-full max-w-md bg-white shadow-2xl border-l">
         <div className="h-14 px-4 border-b flex items-center justify-between">
           <div className="font-semibold">User Details</div>
           <button
@@ -42,80 +53,75 @@ export default function UserDrawer({
         <div className="p-4 space-y-6 overflow-auto h-[calc(100vh-56px)]">
           {detail.isLoading ? (
             <div className="text-gray-600">Loading user…</div>
-          ) : detail.isError ? (
+          ) : detail.isError || !data ? (
             <div className="text-red-600">Failed to load user.</div>
-          ) : !user?.name ? (
-            <div className="text-red-600">Invalid user payload.</div>
           ) : (
             <>
               <div className="rounded-2xl border p-4">
-                <div className="text-lg font-semibold">{user.name}</div>
-                <div className="mt-1 text-sm text-gray-600">{user.email}</div>
+                <div className="text-lg font-semibold">{data.user.name}</div>
+                <div className="mt-1 text-sm text-gray-600">{data.user.email}</div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <div className="text-xs text-gray-500">Role</div>
-                    <div className="font-medium">{String(user.role).replace("_", " ")}</div>
+                    <div className="font-medium">{data.user.role.replace("_", " ")}</div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Status</div>
-                    <div className="font-medium">{user.status}</div>
+                    <div className="font-medium">{data.user.status}</div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">Last seen</div>
                     <div className="font-medium">
-                      {user.lastSeen ? new Date(user.lastSeen).toLocaleString() : "—"}
+                      {new Date(data.user.lastSeen).toLocaleString()}
                     </div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500">User ID</div>
-                    <div className="font-medium">{user.id}</div>
+                    <div className="font-medium">{data.user.id}</div>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-2xl border p-4">
                 <div className="font-semibold">Recent Sessions</div>
-
-                {sessions.length === 0 ? (
-                  <div className="mt-3 text-sm text-gray-600">No sessions available.</div>
-                ) : (
-                  <div className="mt-3 space-y-3">
-                    {sessions.map((s: any) => (
-                      <div key={s.id} className="rounded-xl border p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-medium">
-                              {s.brand} — {s.model}
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500">
-                              {new Date(s.ts).toLocaleString()}
-                            </div>
+                <div className="mt-3 space-y-3">
+                  {data.sessions.map((s) => (
+                    <div key={s.id} className="rounded-xl border p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium">
+                            {s.brand} — {s.model}
                           </div>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              s.status === "completed"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {s.status}
-                          </span>
+                          <div className="mt-1 text-xs text-gray-500">
+                            {new Date(s.ts).toLocaleString()}
+                          </div>
                         </div>
-
-                        <div className="mt-2 text-xs text-gray-600">
-                          Foot: <span className="font-medium">{s.footShape}</span> • Toe:{" "}
-                          <span className="font-medium">{s.toeShape}</span>
-                        </div>
+                        <span
+                          className={[
+                            "text-xs px-2 py-1 rounded-full",
+                            s.status === "completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700",
+                          ].join(" ")}
+                        >
+                          {s.status}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      <div className="mt-2 text-xs text-gray-600">
+                        Foot: <span className="font-medium">{s.footShape}</span> • Toe:{" "}
+                        <span className="font-medium">{s.toeShape}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
